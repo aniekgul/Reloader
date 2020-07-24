@@ -1,6 +1,7 @@
 package callbacks
 
 import (
+	rollouts "github.com/argoproj/argo-rollouts/pkg/apis/rollouts/v1alpha1"
 	"github.com/sirupsen/logrus"
 	"github.com/stakater/Reloader/internal/pkg/util"
 	"github.com/stakater/Reloader/pkg/kube"
@@ -53,6 +54,15 @@ func GetDeploymentItems(clients kube.Clients, namespace string) []interface{} {
 	return util.InterfaceSlice(deployments.Items)
 }
 
+// GetRolloutItems returns the rollouts in given namespace
+func GetRolloutItems(clients kube.Clients, namespace string) []interface{} {
+	rollouts, err := clients.ArgoRolloutsClient.Rollouts(namespace).List(meta_v1.ListOptions{})
+	if err != nil {
+		logrus.Errorf("Failed to list rollouts %v", err)
+	}
+	return util.InterfaceSlice(rollouts.Items)
+}
+
 // GetDaemonSetItems returns the daemonSets in given namespace
 func GetDaemonSetItems(clients kube.Clients, namespace string) []interface{} {
 	daemonSets, err := clients.KubernetesClient.AppsV1().DaemonSets(namespace).List(meta_v1.ListOptions{})
@@ -85,6 +95,11 @@ func GetDeploymentAnnotations(item interface{}) map[string]string {
 	return item.(appsv1.Deployment).ObjectMeta.Annotations
 }
 
+// GetRolloutAnnotations returns the annotations of given rollout
+func GetRolloutAnnotations(item interface{}) map[string]string {
+	return item.(rollouts.Rollout).ObjectMeta.Annotations
+}
+
 // GetDaemonSetAnnotations returns the annotations of given daemonSet
 func GetDaemonSetAnnotations(item interface{}) map[string]string {
 	return item.(appsv1.DaemonSet).ObjectMeta.Annotations
@@ -103,6 +118,11 @@ func GetDeploymentConfigAnnotations(item interface{}) map[string]string {
 // GetDeploymentPodAnnotations returns the pod's annotations of given deployment
 func GetDeploymentPodAnnotations(item interface{}) map[string]string {
 	return item.(appsv1.Deployment).Spec.Template.ObjectMeta.Annotations
+}
+
+// GetRolloutPodAnnotations returns the pod's annotations of given rollout
+func GetRolloutPodAnnotations(item interface{}) map[string]string {
+	return item.(rollouts.Rollout).Spec.Template.ObjectMeta.Annotations
 }
 
 // GetDaemonSetPodAnnotations returns the pod's annotations of given daemonSet
@@ -125,6 +145,11 @@ func GetDeploymentContainers(item interface{}) []v1.Container {
 	return item.(appsv1.Deployment).Spec.Template.Spec.Containers
 }
 
+// GetRolloutContainers returns the containers of given rollout
+func GetRolloutContainers(item interface{}) []v1.Container {
+	return item.(rollouts.Rollout).Spec.Template.Spec.Containers
+}
+
 // GetDaemonSetContainers returns the containers of given daemonSet
 func GetDaemonSetContainers(item interface{}) []v1.Container {
 	return item.(appsv1.DaemonSet).Spec.Template.Spec.Containers
@@ -143,6 +168,11 @@ func GetDeploymentConfigContainers(item interface{}) []v1.Container {
 // GetDeploymentInitContainers returns the containers of given deployment
 func GetDeploymentInitContainers(item interface{}) []v1.Container {
 	return item.(appsv1.Deployment).Spec.Template.Spec.InitContainers
+}
+
+// GetRolloutInitContainers returns the containers of given rollout
+func GetRolloutInitContainers(item interface{}) []v1.Container {
+	return item.(rollouts.Rollout).Spec.Template.Spec.InitContainers
 }
 
 // GetDaemonSetInitContainers returns the containers of given daemonSet
@@ -164,6 +194,13 @@ func GetDeploymentConfigInitContainers(item interface{}) []v1.Container {
 func UpdateDeployment(clients kube.Clients, namespace string, resource interface{}) error {
 	deployment := resource.(appsv1.Deployment)
 	_, err := clients.KubernetesClient.AppsV1().Deployments(namespace).Update(&deployment)
+	return err
+}
+
+// UpdateRollout performs rolling upgrade on rollout
+func UpdateRollout(clients kube.Clients, namespace string, resource interface{}) error {
+	rollout := resource.(rollouts.Rollout)
+	_, err := clients.ArgoRolloutsClient.Rollouts(namespace).Update(&rollout)
 	return err
 }
 
@@ -191,6 +228,11 @@ func UpdateDeploymentConfig(clients kube.Clients, namespace string, resource int
 // GetDeploymentVolumes returns the Volumes of given deployment
 func GetDeploymentVolumes(item interface{}) []v1.Volume {
 	return item.(appsv1.Deployment).Spec.Template.Spec.Volumes
+}
+
+// GetRolloutVolumes returns the Volumes of given rollout
+func GetRolloutVolumes(item interface{}) []v1.Volume {
+	return item.(rollouts.Rollout).Spec.Template.Spec.Volumes
 }
 
 // GetDaemonSetVolumes returns the Volumes of given daemonSet

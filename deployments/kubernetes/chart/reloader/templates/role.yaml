@@ -38,6 +38,17 @@ rules:
       - update
       - patch
 {{- end }}
+{{- if .Values.reloader.argoRolloutsEnabled }}
+  - apiGroups:
+      - "argoproj.io"
+    resources:
+      - rollouts
+    verbs:
+      - list
+      - get
+      - update
+      - patch
+{{- end }}
   - apiGroups:
       - "apps"
     resources:
