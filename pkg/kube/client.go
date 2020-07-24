@@ -5,8 +5,10 @@ import (
 
 	"k8s.io/client-go/tools/clientcmd"
 
+	rollouts "github.com/argoproj/argo-rollouts/pkg/client/clientset/versioned/typed/rollouts/v1alpha1"
 	appsclient "github.com/openshift/client-go/apps/clientset/versioned"
 	"github.com/sirupsen/logrus"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -15,11 +17,14 @@ import (
 type Clients struct {
 	KubernetesClient    kubernetes.Interface
 	OpenshiftAppsClient appsclient.Interface
+	ArgoRolloutsClient  rollouts.ArgoprojV1alpha1Interface
 }
 
 var (
 	// IsOpenshift is true if environment is Openshift, it is false if environment is Kubernetes
 	IsOpenshift = isOpenshift()
+	// IsArgoRollouts is true if Argo Rollout resource are in the environment
+	IsArgoRollouts = isArgoRollouts()
 )
 
 // GetClients returns a `Clients` object containing both openshift and kubernetes clients with an openshift identifier
@@ -38,9 +43,19 @@ func GetClients() Clients {
 		}
 	}
 
+	var argoRolloutsClient *rollouts.ArgoprojV1alpha1Client
+
+	if IsArgoRollouts {
+		argoRolloutsClient, err = GetArgoRolloutsClient()
+		if err != nil {
+			logrus.Warnf("Unable to create ArgoRollouts client error = %v", err)
+		}
+	}
+
 	return Clients{
 		KubernetesClient:    client,
 		OpenshiftAppsClient: appsClient,
+		ArgoRolloutsClient:  argoRolloutsClient,
 	}
 }
 
@@ -58,6 +73,24 @@ func isOpenshift() bool {
 	return false
 }
 
+func isArgoRollouts() bool {
+	client, err := GetKubernetesDiscoveryClient()
+	if err != nil {
+		logrus.Fatalf("Unable to create Kubernetes discovery client error = %v", err)
+	}
+	resources, err := client.ServerResourcesForGroupVersion("argoproj.io/v1alpha1")
+	if err != nil {
+		logrus.Fatalf("Unable to get argoproj.io/v1alpha1 resources error = %v", err)
+		return false
+	}
+	for _, resource := range resources.APIResources {
+		if resource.Name == "rollouts" {
+			return true
+		}
+	}
+	return false
+}
+
 // GetOpenshiftAppsClient returns an Openshift Client that can query on Apps
 func GetOpenshiftAppsClient() (*appsclient.Clientset, error) {
 	config, err := getConfig()
@@ -65,6 +98,24 @@ func GetOpenshiftAppsClient() (*appsclient.Clientset, error) {
 		return nil, err
 	}
 	return appsclient.NewForConfig(config)
+}
+
+// GetArgoRolloutsClient returns an Openshift Client that can query on Apps
+func GetArgoRolloutsClient() (*rollouts.ArgoprojV1alpha1Client, error) {
+	config, err := getConfig()
+	if err != nil {
+		return nil, err
+	}
+	return rollouts.NewForConfig(config)
+}
+
+// GetKubernetesDiscoveryClient returns an Openshift Client that can query on Apps
+func GetKubernetesDiscoveryClient() (*discovery.DiscoveryClient, error) {
+	config, err := getConfig()
+	if err != nil {
+		return nil, err
+	}
+	return discovery.NewDiscoveryClientForConfig(config)
 }
 
 // GetKubernetesClient gets the client for k8s, if ~/.kube/config exists so get that config else incluster config
