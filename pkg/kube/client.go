@@ -104,7 +104,7 @@ func GetOpenshiftAppsClient() (*appsclient.Clientset, error) {
 	return appsclient.NewForConfig(config)
 }
 
-// GetArgoRolloutsClient returns an Openshift Client that can query on Apps
+// GetArgoRolloutsClient returns an Argoproj Client that can query on Rollouts
 func GetArgoRolloutsClient() (*rollouts.ArgoprojV1alpha1Client, error) {
 	config, err := getConfig()
 	if err != nil {
