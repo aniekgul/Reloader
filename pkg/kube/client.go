@@ -72,18 +72,23 @@ func isOpenshift() bool {
 	return false
 }
 
+const (
+	rolloutsGroup        = "argoproj.io/v1alpha1"
+	rolloutsResourceName = "rollouts"
+)
+
 func isArgoRolloutsFound() bool {
 	client, err := GetKubernetesClient()
 	if err != nil {
 		logrus.Fatalf("Unable to create Kubernetes discovery client error = %v", err)
 	}
-	resources, err := client.DiscoveryClient.ServerResourcesForGroupVersion("argoproj.io/v1alpha1")
+	resources, err := client.DiscoveryClient.ServerResourcesForGroupVersion(rolloutsGroup)
 	if err != nil {
-		logrus.Warnf("Unable to get argoproj.io/v1alpha1 resources error = %v", err)
+		logrus.Warnf("Unable to get %s resources error = %v", rolloutsGroup, err)
 		return false
 	}
 	for _, resource := range resources.APIResources {
-		if resource.Name == "rollouts" {
+		if resource.Name == rolloutsResourceName {
 			return true
 		}
 	}
