@@ -10,6 +10,7 @@ kubernetes:
 
 reloader:
   isOpenshift: false
+  argoRolloutsEnabled: false
   ignoreSecrets: false
   ignoreConfigMaps: false
   logFormat: "" #json

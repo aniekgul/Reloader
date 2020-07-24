@@ -96,7 +96,7 @@ func doRollingUpgrade(config util.Config, collectors metrics.Collectors) {
 		rollingUpgrade(clients, config, GetDeploymentConfigRollingUpgradeFuncs(), collectors)
 	}
 
-	if kube.IsArgoRollouts {
+	if kube.ArgoRolloutsEnabled {
 		rollingUpgrade(clients, config, GetArgoRolloutRollingUpgradeFuncs(), collectors)
 	}
 }

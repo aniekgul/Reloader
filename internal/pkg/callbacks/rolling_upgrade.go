@@ -58,7 +58,7 @@ func GetDeploymentItems(clients kube.Clients, namespace string) []interface{} {
 func GetRolloutItems(clients kube.Clients, namespace string) []interface{} {
 	rollouts, err := clients.ArgoRolloutsClient.Rollouts(namespace).List(meta_v1.ListOptions{})
 	if err != nil {
-		logrus.Errorf("Failed to list deployments %v", err)
+		logrus.Errorf("Failed to list rollouts %v", err)
 	}
 	return util.InterfaceSlice(rollouts.Items)
 }

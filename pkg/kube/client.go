@@ -23,8 +23,8 @@ type Clients struct {
 var (
 	// IsOpenshift is true if environment is Openshift, it is false if environment is Kubernetes
 	IsOpenshift = isOpenshift()
-	// IsArgoRollouts is true if Argo Rollout resource are in the environment
-	IsArgoRollouts = isArgoRollouts()
+	// ArgoRolloutsEnabled is true if Argo Rollout resources are in the environment
+	ArgoRolloutsEnabled = isArgoRolloutsFound()
 )
 
 // GetClients returns a `Clients` object containing both openshift and kubernetes clients with an openshift identifier
@@ -45,7 +45,7 @@ func GetClients() Clients {
 
 	var argoRolloutsClient *rollouts.ArgoprojV1alpha1Client
 
-	if IsArgoRollouts {
+	if ArgoRolloutsEnabled {
 		argoRolloutsClient, err = GetArgoRolloutsClient()
 		if err != nil {
 			logrus.Warnf("Unable to create ArgoRollouts client error = %v", err)
@@ -73,7 +73,7 @@ func isOpenshift() bool {
 	return false
 }
 
-func isArgoRollouts() bool {
+func isArgoRolloutsFound() bool {
 	client, err := GetKubernetesDiscoveryClient()
 	if err != nil {
 		logrus.Fatalf("Unable to create Kubernetes discovery client error = %v", err)
