@@ -80,7 +80,7 @@ const (
 func isArgoRolloutsFound() bool {
 	client, err := GetKubernetesClient()
 	if err != nil {
-		logrus.Fatalf("Unable to create Kubernetes discovery client error = %v", err)
+		logrus.Fatalf("Unable to create Kubernetes client error = %v", err)
 	}
 	resources, err := client.DiscoveryClient.ServerResourcesForGroupVersion(rolloutsGroup)
 	if err != nil {
